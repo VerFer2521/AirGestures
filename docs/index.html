@@ -157,6 +157,14 @@ details p{color:var(--muted);font-size:15px;margin-top:10px}
 footer{border-top:1px solid var(--line);padding-block:30px;font-size:13px;color:var(--muted);text-align:center}
 .toggle{font:inherit;font-size:13px;background:none;border:1px solid var(--line);color:var(--fg);border-radius:980px;padding:4px 12px;cursor:pointer}
 
+.team{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:56px}
+@media(max-width:640px){.team{grid-template-columns:1fr}}
+.mem{background:var(--card);border:1px solid var(--line);border-radius:26px;padding:30px;text-align:center}
+.av{width:84px;height:84px;border-radius:50%;margin:0 auto 18px;display:grid;place-items:center;font-size:30px;font-weight:700;color:#fff;letter-spacing:-.02em}
+.mem:nth-child(1) .av{background:linear-gradient(135deg,var(--cyan),var(--violet))}
+.mem:nth-child(2) .av{background:linear-gradient(135deg,var(--violet),var(--pink))}
+.mem:nth-child(3) .av{background:linear-gradient(135deg,var(--pink),var(--orange))}
+.mem p{color:var(--muted);font-size:14px;margin-top:4px}
 /* gentle reveal: content is visible at rest, it only drifts up a little */
 .rv{transition:transform .8s cubic-bezier(.2,.7,.2,1)}
 .js .rv:not(.in){transform:translateY(26px)}
@@ -172,6 +180,7 @@ footer{border-top:1px solid var(--line);padding-block:30px;font-size:13px;color:
     <a class="l" href="#voice">Voice</a>
     <a class="l" href="#how">How it works</a>
     <a class="l" href="#story">Story</a>
+    <a class="l" href="#team">Team</a>
     <a class="l" href="#install">Install</a>
     <a class="btn sm" href="https://github.com/VerFer2521/AirGestures" target="_blank" rel="noopener">GitHub</a>
   </div>
@@ -289,6 +298,21 @@ footer{border-top:1px solid var(--line);padding-block:30px;font-size:13px;color:
   </div>
 </section>
 
+<section id="team">
+  <div class="wrap">
+    <div class="center rv">
+      <p class="eyebrow">The team</p>
+      <h2>Built by three students.</h2>
+      <p class="lead" style="margin-top:18px">Air Gestures is a group college project.</p>
+    </div>
+    <div class="team">
+      <div class="mem rv"><div class="av" aria-hidden="true">AN</div><h3>Abhay Nayak</h3><p>Developer</p></div>
+      <div class="mem rv"><div class="av" aria-hidden="true">DV</div><h3>Dhanush V</h3><p>Team member</p></div>
+      <div class="mem rv"><div class="av" aria-hidden="true">RJ</div><h3>Radhika J</h3><p>Team member</p></div>
+    </div>
+  </div>
+</section>
+
 <section id="privacy">
   <div class="wrap split">
     <div class="rv">
@@ -339,7 +363,7 @@ footer{border-top:1px solid var(--line);padding-block:30px;font-size:13px;color:
 </main>
 
 <footer>
-  <div class="wrap">Air Gestures · A college project · MIT licence · Built with Kotlin, CameraX and MediaPipe ·
+  <div class="wrap">Air Gestures · A college project by Abhay Nayak, Dhanush V and Radhika J · MIT licence · Built with Kotlin, CameraX and MediaPipe ·
     <button class="toggle" id="theme" type="button">Switch theme</button></div>
 </footer>
 
