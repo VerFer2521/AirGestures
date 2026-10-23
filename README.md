@@ -42,6 +42,21 @@ tracks your hand on the device, and nothing is uploaded.
    - On Android 13+, first go to **Settings → Apps → Air Gestures → ⋮ → Allow restricted settings**.
    - Then **Settings → Accessibility → Installed apps → Air Gestures → On**.
 
+### "App blocked to protect your device" (Play Protect)?
+
+Google Play Protect can block apps that are installed outside the Play Store and
+ask for the accessibility permission. Air Gestures is open source, so you can
+read every line of code, but Play Protect cannot tell that. To install it:
+
+1. Open the **Play Store** app and tap your **profile picture**.
+2. Tap **Play Protect**, then the **settings** icon (⚙).
+3. Turn off **Scan apps with Play Protect**.
+4. Install the APK again.
+5. Turn Play Protect back on afterwards. The app keeps working.
+
+On some phones the setting is under **Settings → Security and privacy → Google Play Protect**.
+If you would rather not change this, build the app yourself (below). That never shows the warning.
+
 ## Build from source
 
 1. Install [Android Studio](https://developer.android.com/studio).
