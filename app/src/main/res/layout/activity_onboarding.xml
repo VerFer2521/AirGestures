@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg_dark">
+
+    <Button
+        android:id="@+id/skipButton"
+        android:layout_width="wrap_content"
+        android:layout_height="44dp"
+        android:layout_gravity="top|end"
+        android:layout_marginTop="36dp"
+        android:layout_marginEnd="12dp"
+        android:background="@null"
+        android:stateListAnimator="@null"
+        android:text="Skip"
+        android:textAllCaps="false"
+        android:textColor="@color/text_muted"
+        android:textSize="14sp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginBottom="40dp"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:paddingStart="32dp"
+        android:paddingEnd="32dp">
+
+        <TextView
+            android:id="@+id/obEmoji"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="88sp" />
+
+        <TextView
+            android:id="@+id/obTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="22dp"
+            android:fontFamily="sans-serif-black"
+            android:gravity="center"
+            android:shadowColor="@color/neon_cyan"
+            android:shadowDx="0"
+            android:shadowDy="0"
+            android:shadowRadius="14"
+            android:textColor="@color/neon_cyan"
+            android:textSize="26sp" />
+
+        <TextView
+            android:id="@+id/obDesc"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:gravity="center"
+            android:lineSpacingExtra="4dp"
+            android:textColor="@color/text_muted"
+            android:textSize="15sp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/obDots"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginBottom="120dp"
+        android:gravity="center"
+        android:orientation="horizontal" />
+
+    <Button
+        android:id="@+id/obNext"
+        android:layout_width="match_parent"
+        android:layout_height="54dp"
+        android:layout_gravity="bottom"
+        android:layout_marginStart="24dp"
+        android:layout_marginEnd="24dp"
+        android:layout_marginBottom="40dp"
+        android:background="@drawable/bg_card"
+        android:fontFamily="sans-serif-medium"
+        android:stateListAnimator="@null"
+        android:textAllCaps="false"
+        android:textColor="@color/neon_cyan"
+        android:textSize="16sp" />
+
+</FrameLayout>

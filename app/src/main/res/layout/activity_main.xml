@@ -1,0 +1,310 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg_dark">
+
+    <androidx.camera.view.PreviewView
+        android:id="@+id/previewView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <!-- Hand-only stage: draws over the camera preview -->
+    <com.project_by_adr.airgestures.HandStageView
+        android:id="@+id/handStage"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|start"
+        android:layout_margin="20dp"
+        android:alpha="0.85"
+        android:fontFamily="sans-serif-black"
+        android:letterSpacing="0.15"
+        android:text="AIR GESTURES"
+        android:textColor="@color/neon_cyan"
+        android:textSize="13sp" />
+
+    <!-- Top HUD: gesture pill, confidence bar, live stats -->
+    <LinearLayout
+        android:id="@+id/hudGroup"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|center_horizontal"
+        android:layout_marginTop="46dp"
+        android:gravity="center_horizontal"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/gestureText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_status_pill"
+            android:elevation="6dp"
+            android:fontFamily="sans-serif-medium"
+            android:text="Show your hand…"
+            android:textColor="@color/text_primary"
+            android:textSize="15sp" />
+
+        <ProgressBar
+            android:id="@+id/confidenceBar"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="170dp"
+            android:layout_height="4dp"
+            android:layout_marginTop="10dp"
+            android:max="100"
+            android:progress="0"
+            android:progressBackgroundTint="#33FFFFFF"
+            android:progressTint="@color/neon_cyan" />
+
+        <TextView
+            android:id="@+id/statsText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:letterSpacing="0.06"
+            android:text="ON-DEVICE AI  ·  0 FPS  ·  0 actions"
+            android:textColor="@color/text_muted"
+            android:textSize="10sp" />
+    </LinearLayout>
+
+    <!-- Game panel (only visible during a round) -->
+    <LinearLayout
+        android:id="@+id/gamePanel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|center_horizontal"
+        android:layout_marginTop="150dp"
+        android:background="@drawable/bg_action_popup"
+        android:elevation="10dp"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:letterSpacing="0.15"
+            android:text="MAKE THIS GESTURE"
+            android:textColor="@color/text_muted"
+            android:textSize="10sp" />
+
+        <TextView
+            android:id="@+id/targetEmoji"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:textSize="56sp" />
+
+        <TextView
+            android:id="@+id/targetName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="sans-serif-medium"
+            android:textColor="@color/text_primary"
+            android:textSize="18sp" />
+
+        <TextView
+            android:id="@+id/gameInfo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:textColor="@color/neon_cyan"
+            android:textSize="14sp" />
+    </LinearLayout>
+
+    <!-- Ripple rings that play when an action fires -->
+    <com.project_by_adr.airgestures.BurstView
+        android:id="@+id/burstView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <!-- Hold ring: fills while you hold a gesture -->
+    <com.project_by_adr.airgestures.HoldRingView
+        android:id="@+id/holdRing"
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        android:layout_gravity="center"
+        android:visibility="invisible" />
+
+    <!-- Action popup, center (animated from code) -->
+    <TextView
+        android:id="@+id/actionPopup"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:alpha="0"
+        android:background="@drawable/bg_action_popup"
+        android:elevation="12dp"
+        android:fontFamily="sans-serif-medium"
+        android:textColor="@color/text_primary"
+        android:textSize="24sp" />
+
+    <!-- Bottom glass panel with six icon buttons -->
+    <LinearLayout
+        android:id="@+id/bottomBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:background="@drawable/bg_bottom_panel"
+        android:elevation="8dp"
+        android:orientation="horizontal"
+        android:paddingStart="6dp"
+        android:paddingTop="22dp"
+        android:paddingEnd="6dp"
+        android:paddingBottom="30dp">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <Button
+                android:id="@+id/micButton"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="@drawable/circle_button_selector"
+                android:stateListAnimator="@null"
+                android:text="🎤"
+                android:textSize="18sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Voice"
+                android:textColor="@color/text_muted"
+                android:textSize="10sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <Button
+                android:id="@+id/gameButton"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="@drawable/circle_button_selector"
+                android:stateListAnimator="@null"
+                android:text="🎮"
+                android:textSize="18sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Game"
+                android:textColor="@color/text_muted"
+                android:textSize="10sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <Button
+                android:id="@+id/adminButton"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="@drawable/circle_button_selector"
+                android:stateListAnimator="@null"
+                android:text="🔒"
+                android:textSize="18sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Lock"
+                android:textColor="@color/text_muted"
+                android:textSize="10sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <Button
+                android:id="@+id/backgroundButton"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="@drawable/circle_button_selector"
+                android:stateListAnimator="@null"
+                android:text="⏻"
+                android:textSize="18sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Always-on"
+                android:textColor="@color/text_muted"
+                android:textSize="10sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <Button
+                android:id="@+id/guideButton"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="@drawable/circle_button_selector"
+                android:stateListAnimator="@null"
+                android:text="📖"
+                android:textSize="18sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Guide"
+                android:textColor="@color/text_muted"
+                android:textSize="10sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <Button
+                android:id="@+id/settingsButton"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="@drawable/circle_button_selector"
+                android:stateListAnimator="@null"
+                android:text="⚙"
+                android:textSize="18sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Settings"
+                android:textColor="@color/text_muted"
+                android:textSize="10sp" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+</FrameLayout>

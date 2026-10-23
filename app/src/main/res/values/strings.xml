@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">AirGestures</string>
+    <string name="accessibility_description">Lets Air Gestures swipe, tap and type for you so hand gestures and voice commands can control apps. It only looks at the screen when you give a voice command and never stores it.</string>
+</resources>

@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg_dark">
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center_horizontal"
+        android:orientation="vertical">
+
+        <com.project_by_adr.airgestures.SplashHandView
+            android:id="@+id/splashHand"
+            android:layout_width="220dp"
+            android:layout_height="260dp" />
+
+        <TextView
+            android:id="@+id/splashTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:alpha="0"
+            android:fontFamily="sans-serif-black"
+            android:letterSpacing="0.3"
+            android:shadowColor="@color/neon_cyan"
+            android:shadowDx="0"
+            android:shadowDy="0"
+            android:shadowRadius="18"
+            android:text="AIR GESTURES"
+            android:textColor="@color/neon_cyan"
+            android:textSize="26sp" />
+
+        <View
+            android:id="@+id/splashLine"
+            android:layout_width="64dp"
+            android:layout_height="2dp"
+            android:layout_marginTop="14dp"
+            android:alpha="0.8"
+            android:background="@color/neon_magenta"
+            android:scaleX="0" />
+
+        <TextView
+            android:id="@+id/splashTagline"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:alpha="0"
+            android:fontFamily="sans-serif-medium"
+            android:letterSpacing="0.2"
+            android:text="TOUCHLESS CONTROL"
+            android:textColor="@color/text_muted"
+            android:textSize="11sp" />
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/splashCredit"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginBottom="48dp"
+        android:alpha="0"
+        android:fontFamily="sans-serif-medium"
+        android:letterSpacing="0.05"
+        android:text="made with love by ADR"
+        android:textColor="@color/text_muted"
+        android:textSize="12sp" />
+
+</FrameLayout>
