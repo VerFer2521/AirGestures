@@ -1,0 +1,514 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="Air Gestures: control your Android phone with hand gestures and voice. Open source.">
+<title>Air Gestures</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout concept: Apple-style product page. One huge centered hero with a live hand skeleton,
+   then full-width chapters that alternate between plain and tinted bands. Boldness lives in the hero type and the hand. */
+:root{
+  --bg:#fbfbfd; --bg2:#f2f2f5; --card:#ffffff; --fg:#1d1d1f; --muted:#6e6e73; --line:rgba(0,0,0,.09);
+  --accent:#0071e3; --cyan:#00a8c6; --pink:#e0267d; --violet:#7b4dff; --orange:#f07d17; --green:#1f9d55;
+  --nav:rgba(251,251,253,.72); --shadow:0 20px 50px rgba(20,20,40,.10);
+  --font:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Segoe UI","Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#000; --bg2:#0d0d10; --card:#161618; --fg:#f5f5f7; --muted:#a1a1a6; --line:rgba(255,255,255,.12);
+  --accent:#2997ff; --cyan:#32d4ef; --pink:#ff4fa0; --violet:#9b7bff; --orange:#ff9a3d; --green:#4cd38a;
+  --nav:rgba(0,0,0,.6); --shadow:0 20px 50px rgba(0,0,0,.5); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#000; --bg2:#0d0d10; --card:#161618; --fg:#f5f5f7; --muted:#a1a1a6; --line:rgba(255,255,255,.12);
+  --accent:#2997ff; --cyan:#32d4ef; --pink:#ff4fa0; --violet:#9b7bff; --orange:#ff9a3d; --green:#4cd38a;
+  --nav:rgba(0,0,0,.6); --shadow:0 20px 50px rgba(0,0,0,.5); color-scheme:dark}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font);font-size:17px;line-height:1.5;
+  -webkit-font-smoothing:antialiased;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));overflow-x:hidden}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+.wrap{max-width:1040px;margin:0 auto}
+section{padding-block:clamp(72px,11vw,150px)}
+.band{background:var(--bg2);margin-left:calc(-1*max(16px,env(safe-area-inset-left,0px)));margin-right:calc(-1*max(16px,env(safe-area-inset-right,0px)));
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.eyebrow{font-size:14px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 14px}
+h1,h2,h3{margin:0;font-weight:700;letter-spacing:-.025em;text-wrap:balance;line-height:1.05}
+h1{font-size:clamp(46px,9.4vw,104px);letter-spacing:-.04em}
+h2{font-size:clamp(34px,5.6vw,64px)}
+h3{font-size:21px;letter-spacing:-.01em;line-height:1.25}
+p{margin:0}
+.lead{font-size:clamp(19px,2.4vw,26px);color:var(--muted);line-height:1.35;max-width:46ch;text-wrap:pretty}
+.center{text-align:center}.center .lead{margin-inline:auto}
+.grad{background:linear-gradient(90deg,var(--cyan),var(--violet) 55%,var(--pink));-webkit-background-clip:text;background-clip:text;color:transparent}
+
+/* nav */
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:60;background:var(--nav);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px)}
+nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:50;margin-inline:calc(-1*max(16px,env(safe-area-inset-left,0px)));padding-inline:max(16px,env(safe-area-inset-left,0px));
+  background:var(--nav);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);border-bottom:1px solid var(--line)}
+nav .in{max-width:1040px;margin:0 auto;height:52px;display:flex;align-items:center;gap:22px}
+nav b{font-size:17px;letter-spacing:-.01em;margin-right:auto}
+nav a.l{color:var(--fg);font-size:13px;opacity:.8}
+nav a.l:hover{opacity:1;text-decoration:none}
+.btn{display:inline-flex;align-items:center;gap:8px;background:var(--accent);color:#fff;border-radius:980px;padding:11px 22px;font-size:17px;font-weight:500;border:0;cursor:pointer;font-family:inherit}
+.btn:hover{text-decoration:none;filter:brightness(1.08)}
+.btn.sm{padding:6px 14px;font-size:13px}
+.btn.ghost{background:transparent;color:var(--accent);padding-inline:6px}
+.btn:focus-visible,a:focus-visible,button:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+@media(max-width:700px){nav a.l{display:none}}
+
+/* hero */
+.hero{padding-top:clamp(56px,9vw,110px);padding-bottom:0;text-align:center}
+.hero .lead{margin:22px auto 30px}
+.hero .cta{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.stage{position:relative;margin:clamp(36px,6vw,70px) auto 0;max-width:760px;aspect-ratio:4/3.2;border-radius:32px 32px 0 0;overflow:hidden;
+  background:linear-gradient(180deg,#060a14,#0d1430);box-shadow:var(--shadow)}
+.stage canvas{position:absolute;inset:0;width:100%;height:100%}
+.stage .tag{position:absolute;left:50%;bottom:22px;transform:translateX(-50%);padding:8px 18px;border-radius:980px;background:rgba(255,255,255,.1);
+  border:1px solid rgba(255,255,255,.18);color:#fff;font-size:15px;white-space:nowrap;-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
+
+/* split rows */
+.split{display:grid;grid-template-columns:1fr 1fr;gap:clamp(28px,5vw,70px);align-items:center}
+.split>*{min-width:0}
+@media(max-width:800px){.split{grid-template-columns:1fr}}
+.pill{display:inline-block;font-size:13px;font-weight:600;padding:4px 12px;border-radius:980px;background:var(--bg2);color:var(--muted);border:1px solid var(--line)}
+
+/* gesture explorer */
+.explore{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:20px;margin-top:56px}
+@media(max-width:800px){.explore{grid-template-columns:1fr}}
+.glist{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-content:start}
+.g{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;text-align:left;cursor:pointer;font:inherit;color:inherit;transition:transform .25s,box-shadow .25s,border-color .25s}
+.g:hover{transform:translateY(-2px)}
+.g[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent) inset}
+.g .e{font-size:30px;line-height:1}
+.g .n{font-weight:600;margin-top:10px;font-size:16px}
+.g .d{font-size:13px;color:var(--muted)}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:28px;padding:30px;box-shadow:var(--shadow);display:flex;flex-direction:column;justify-content:center;min-height:300px}
+.panel .big{font-size:78px;line-height:1}
+.panel .arrow{color:var(--muted);font-size:14px;letter-spacing:.08em;text-transform:uppercase;margin-top:22px}
+.panel .act{font-size:30px;font-weight:700;letter-spacing:-.02em;margin-top:6px}
+.ring{width:54px;height:54px;margin-top:20px}
+.ring circle{fill:none;stroke-width:5;stroke-linecap:round}
+.ring .t{stroke:var(--line)}
+.ring .p{stroke:var(--accent);stroke-dasharray:138;stroke-dashoffset:138;animation:fill 2s ease-in-out infinite;transform:rotate(-90deg);transform-origin:50% 50%}
+@keyframes fill{0%{stroke-dashoffset:138}60%,100%{stroke-dashoffset:0;stroke:var(--green)}}
+
+/* autopilot */
+.term{background:#0c0c10;color:#e8e8ee;border-radius:24px;padding:22px;font-family:var(--mono);font-size:14px;line-height:1.7;box-shadow:var(--shadow);min-height:330px;overflow:hidden}
+.term .say{color:#7fe3ff}
+.term .st{opacity:.95;display:flex;gap:10px}
+.term .ok{color:#4cd38a}
+.term .dim{color:#8b8b95}
+.term .cur{display:inline-block;width:8px;height:16px;background:#7fe3ff;vertical-align:-3px;animation:bl 1s steps(2) infinite}
+@keyframes bl{50%{opacity:0}}
+.cmds{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px}
+.cmds button{font:inherit;font-size:14px;border:1px solid var(--line);background:var(--card);color:var(--fg);padding:8px 14px;border-radius:980px;cursor:pointer}
+.cmds button[aria-pressed="true"]{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+/* feature grid */
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:56px}
+@media(max-width:900px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.grid{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:26px;padding:28px}
+.card .ic{font-size:32px;line-height:1;margin-bottom:46px}
+.card p{color:var(--muted);font-size:15px;margin-top:8px}
+
+/* pipeline */
+.pipe{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:56px}
+@media(max-width:800px){.pipe{grid-template-columns:1fr 1fr}}
+@media(max-width:480px){.pipe{grid-template-columns:1fr}}
+.step{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:22px;position:relative}
+.step .k{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.step h3{margin:10px 0 6px;font-size:19px}
+.step p{font-size:14px;color:var(--muted)}
+.stats{display:flex;flex-wrap:wrap;gap:12px 40px;margin-top:40px;justify-content:center}
+.stats div{text-align:center}
+.stats b{display:block;font-size:44px;letter-spacing:-.03em;line-height:1.1}
+.stats span{font-size:14px;color:var(--muted)}
+
+/* timeline */
+.tl{margin:56px auto 0;max-width:720px;position:relative;padding-left:34px}
+.tl::before{content:"";position:absolute;left:7px;top:6px;bottom:6px;width:2px;background:linear-gradient(var(--cyan),var(--violet),var(--pink));border-radius:2px}
+.ev{position:relative;padding-bottom:30px}
+.ev::before{content:"";position:absolute;left:-34px;top:6px;width:16px;height:16px;border-radius:50%;background:var(--bg);border:3px solid var(--accent)}
+.ev .v{font-family:var(--mono);font-size:12px;color:var(--muted);letter-spacing:.05em}
+.ev h3{margin-top:2px}
+.ev p{color:var(--muted);font-size:15px;margin-top:4px}
+
+/* privacy / install */
+.bullets{display:grid;gap:14px;margin-top:30px;padding:0;list-style:none}
+.bullets li{display:flex;gap:14px;align-items:flex-start;color:var(--muted);font-size:17px}
+.bullets li b{color:var(--fg)}
+.bullets .ck{flex:none;width:24px;height:24px;border-radius:50%;background:var(--green);color:#fff;font-size:14px;display:grid;place-items:center;margin-top:2px}
+.steps{counter-reset:s;display:grid;gap:12px;margin-top:30px;padding:0;list-style:none}
+.steps li{counter-increment:s;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px 20px 18px 62px;position:relative;color:var(--muted);font-size:16px}
+.steps li::before{content:counter(s);position:absolute;left:18px;top:16px;width:30px;height:30px;border-radius:50%;background:var(--accent);color:#fff;font-weight:600;display:grid;place-items:center;font-size:15px}
+.steps li b{color:var(--fg)}
+details{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px 20px;margin-top:12px}
+summary{cursor:pointer;font-weight:600}
+details p{color:var(--muted);font-size:15px;margin-top:10px}
+
+.final{text-align:center}
+.final .cta{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:34px}
+.code{font-family:var(--mono);font-size:13px;color:var(--muted);margin-top:22px;word-break:break-all}
+footer{border-top:1px solid var(--line);padding-block:30px;font-size:13px;color:var(--muted);text-align:center}
+.toggle{font:inherit;font-size:13px;background:none;border:1px solid var(--line);color:var(--fg);border-radius:980px;padding:4px 12px;cursor:pointer}
+
+/* gentle reveal: content is visible at rest, it only drifts up a little */
+.rv{transition:transform .8s cubic-bezier(.2,.7,.2,1)}
+.js .rv:not(.in){transform:translateY(26px)}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}.js .rv:not(.in){transform:none}}
+</style>
+
+</head>
+<body>
+<nav>
+  <div class="in">
+    <b>Air Gestures</b>
+    <a class="l" href="#gestures">Gestures</a>
+    <a class="l" href="#voice">Voice</a>
+    <a class="l" href="#how">How it works</a>
+    <a class="l" href="#story">Story</a>
+    <a class="l" href="#install">Install</a>
+    <a class="btn sm" href="https://github.com/VerFer2521/AirGestures" target="_blank" rel="noopener">GitHub</a>
+  </div>
+</nav>
+
+<main>
+<section class="hero">
+  <div class="wrap">
+    <p class="eyebrow">Open-source Android app</p>
+    <h1>Your hand.<br><span class="grad">Your remote.</span></h1>
+    <p class="lead">Control your phone with hand gestures and your voice. The camera sees your hand, never uploads it, and the phone does the rest.</p>
+    <div class="cta">
+      <a class="btn" href="https://github.com/VerFer2521/AirGestures/releases" target="_blank" rel="noopener">Download the APK</a>
+      <a class="btn ghost" href="https://github.com/VerFer2521/AirGestures" target="_blank" rel="noopener">View source on GitHub ›</a>
+    </div>
+    <div class="stage" aria-label="Animated hand skeleton, as shown in the app">
+      <canvas id="hero" role="img" aria-label="A glowing hand skeleton"></canvas>
+      <div class="tag" id="heroTag">✋ Open palm · Volume up</div>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="gestures">
+  <div class="wrap">
+    <div class="center rv">
+      <p class="eyebrow">Gestures</p>
+      <h2>Ten shapes.<br>Every one remappable.</h2>
+      <p class="lead" style="margin-top:18px">Hold a gesture for a moment and a ring fills. When it closes, the action fires. Choose any shape below.</p>
+    </div>
+    <div class="explore rv">
+      <div class="glist" id="glist"></div>
+      <div class="panel" aria-live="polite">
+        <div class="big" id="pEmoji">✋</div>
+        <div class="arrow">Does</div>
+        <div class="act" id="pAct">Volume up</div>
+        <p id="pNote" style="color:var(--muted);margin-top:10px;font-size:15px"></p>
+        <svg class="ring" viewBox="0 0 54 54" aria-hidden="true"><circle class="t" cx="27" cy="27" r="22"/><circle class="p" cx="27" cy="27" r="22"/></svg>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="voice">
+  <div class="wrap split">
+    <div class="rv">
+      <p class="eyebrow">Voice Autopilot</p>
+      <h2>Say it once.<br>Your phone taps and types.</h2>
+      <p class="lead" style="margin-top:20px">Ask for a multi-step job inside another app. Air Gestures opens it, finds the right button and types for you. Messages wait for you to say “send”.</p>
+      <div class="cmds" id="cmds" role="group" aria-label="Example commands"></div>
+    </div>
+    <div class="term rv" id="term" aria-live="polite"></div>
+  </div>
+</section>
+
+<section class="band">
+  <div class="wrap">
+    <div class="center rv">
+      <p class="eyebrow">Everything inside</p>
+      <h2>Made to be used,<br>not just demoed.</h2>
+    </div>
+    <div class="grid">
+      <div class="card rv"><div class="ic">📜</div><h3>Reel scrolling</h3><p>Make an L with thumb and index. Point up for the next reel, down for the previous one.</p></div>
+      <div class="card rv"><div class="ic">❤️</div><h3>Double tap</h3><p>Hold three fingers to double-tap the screen. On Instagram Reels, that is a like.</p></div>
+      <div class="card rv"><div class="ic">🫧</div><h3>Floating panel</h3><p>A small glass panel shows your hand skeleton over any app, so gestures work while you do other things.</p></div>
+      <div class="card rv"><div class="ic">🔋</div><h3>Battery saver</h3><p>The camera sleeps when the screen is off and wakes when you unlock.</p></div>
+      <div class="card rv"><div class="ic">🎮</div><h3>Gesture challenge</h3><p>A 30-second game that asks for gestures. Beat your best score and learn the shapes.</p></div>
+      <div class="card rv"><div class="ic">🔬</div><h3>Practice mode</h3><p>See what the AI sees: which fingers are up, the pinch gap and its own guess.</p></div>
+      <div class="card rv"><div class="ic">📸</div><h3>System actions</h3><p>Screenshot, back, recent apps, notifications, flashlight, volume and media keys.</p></div>
+      <div class="card rv"><div class="ic">🎛</div><h3>Make it yours</h3><p>Choose what every gesture does, and how long you must hold it, in Settings.</p></div>
+      <div class="card rv"><div class="ic">🖐</div><h3>Hand-only stage</h3><p>No face on screen. A calm animated stage shows only your hand. Tap to bring the camera back.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="how">
+  <div class="wrap center">
+    <div class="rv">
+      <p class="eyebrow">How it works</p>
+      <h2>Twenty-one points.<br>Everything else is math.</h2>
+      <p class="lead" style="margin-top:18px">Google’s MediaPipe finds 21 points on your hand in every frame. Our own code decides what they mean.</p>
+    </div>
+    <div class="pipe">
+      <div class="step rv"><div class="k">CAMERA</div><h3>Front camera</h3><p>CameraX streams frames. Only the newest frame is kept so nothing lags.</p></div>
+      <div class="step rv"><div class="k">MEDIAPIPE</div><h3>Hand landmarks</h3><p>An on-device model returns 21 points and its own guess at the gesture.</p></div>
+      <div class="step rv"><div class="k">ENGINE</div><h3>Gesture engine</h3><p>Finger geometry, hold-to-confirm and swipe detection turn points into poses.</p></div>
+      <div class="step rv"><div class="k">ACTION</div><h3>Phone control</h3><p>Android services press, swipe, type and adjust the system.</p></div>
+    </div>
+    <div class="stats rv">
+      <div><b>0</b><span>images uploaded</span></div>
+      <div><b>21</b><span>hand points tracked</span></div>
+      <div><b>~30</b><span>frames a second</span></div>
+      <div><b>100%</b><span>open source</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="story">
+  <div class="wrap">
+    <div class="center rv">
+      <p class="eyebrow">The story</p>
+      <h2>A college project<br>that kept growing.</h2>
+      <p class="lead" style="margin-top:18px">Air Gestures began as a question: can a phone camera replace the touch screen for small tasks? It started as one screen that recognised a few poses, and grew one upgrade at a time.</p>
+    </div>
+    <div class="tl">
+      <div class="ev rv"><div class="v">START</div><h3>A camera and a few poses</h3><p>The first version recognised hand poses with MediaPipe and could open an app or change the volume.</p></div>
+      <div class="ev rv"><div class="v">VOICE + BACKGROUND</div><h3>Speak to it, use it anywhere</h3><p>Voice commands and a floating overlay let it work above other apps.</p></div>
+      <div class="ev rv"><div class="v">STABILITY</div><h3>Fewer false triggers</h3><p>Hold-to-confirm, hysteresis for pinches and new gestures made it feel dependable.</p></div>
+      <div class="ev rv"><div class="v">PERSONAL</div><h3>Remap, play, measure</h3><p>Every gesture became assignable. A challenge game and a stats page arrived.</p></div>
+      <div class="ev rv"><div class="v">REELS</div><h3>The L sign</h3><p>An accessibility service let a hand shape scroll Instagram Reels.</p></div>
+      <div class="ev rv"><div class="v">POLISH</div><h3>Animations, tour, sound, battery saver</h3><p>A new splash screen, an onboarding tour, a glass overlay and smoother motion.</p></div>
+      <div class="ev rv"><div class="v">ACTIONS</div><h3>Double tap and system actions</h3><p>Three fingers like a reel. Screenshot, back, recents and notifications became assignable.</p></div>
+      <div class="ev rv"><div class="v">AUTOPILOT</div><h3>Voice that works inside apps</h3><p>Multi-step commands open apps, search, click and type, and wait for your “send”.</p></div>
+      <div class="ev rv"><div class="v">TODAY</div><h3>Hand-only stage and open source</h3><p>The camera preview gave way to an animated stage, and the code went public on GitHub.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="privacy">
+  <div class="wrap split">
+    <div class="rv">
+      <p class="eyebrow">Privacy</p>
+      <h2>Your hand stays<br>on your phone.</h2>
+    </div>
+    <ul class="bullets rv" style="margin-top:0">
+      <li><span class="ck">✓</span><span><b>On-device AI.</b> Hand tracking runs on the phone. No images or video leave it.</span></li>
+      <li><span class="ck">✓</span><span><b>Screen reading only on request.</b> The accessibility service looks at button labels only when you give a voice command, and never stores or sends them.</span></li>
+      <li><span class="ck">✓</span><span><b>Nothing sends by itself.</b> Messages are typed, then wait for you to say “send”.</span></li>
+      <li><span class="ck">✓</span><span><b>Read every line.</b> The whole project is open source under the MIT licence.</span></li>
+    </ul>
+  </div>
+</section>
+
+<section class="band" id="install">
+  <div class="wrap" style="max-width:760px">
+    <div class="center rv">
+      <p class="eyebrow">Install</p>
+      <h2>Try it in two minutes.</h2>
+    </div>
+    <ol class="steps rv">
+      <li><b>Download the APK</b> from the Releases page on GitHub and open it on your Android phone.</li>
+      <li><b>Allow “Install unknown apps”</b> when asked. Android needs this for apps outside the Play Store.</li>
+      <li><b>Allow camera and microphone</b> when the app asks.</li>
+      <li><b>Optional:</b> for reel scrolling, double tap and Voice Autopilot, enable the accessibility service. On Android 13 or newer, first open App info, tap ⋮, then <b>Allow restricted settings</b>.</li>
+    </ol>
+    <details class="rv"><summary>Play Protect says “App blocked”</summary>
+      <p>Google Play Protect can block apps outside the Play Store that use accessibility. Open the Play Store, tap your profile picture, then Play Protect, then the settings icon, and turn off “Scan apps with Play Protect” for the install. Turn it back on afterwards. Or build the app yourself, which never shows the warning.</p></details>
+    <details class="rv"><summary>Which Android versions work?</summary>
+      <p>Android 8.0 or newer. Screenshots need Android 9, and pressing the search key in Voice Autopilot needs Android 11.</p></details>
+    <details class="rv"><summary>Build it from source</summary>
+      <p>Clone the repository, open it in Android Studio, let Gradle sync, plug in your phone and press Run. Full steps are in the README.</p></details>
+  </div>
+</section>
+
+<section class="final">
+  <div class="wrap rv">
+    <h2>Free. Open. Yours to change.</h2>
+    <p class="lead" style="margin:18px auto 0">Fork it, fix it, teach with it. Issues and pull requests are welcome.</p>
+    <div class="cta">
+      <a class="btn" href="https://github.com/VerFer2521/AirGestures" target="_blank" rel="noopener">Open on GitHub</a>
+      <a class="btn ghost" href="https://github.com/VerFer2521/AirGestures/releases" target="_blank" rel="noopener">Latest release ›</a>
+    </div>
+    <p class="code">github.com/VerFer2521/AirGestures</p>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">Air Gestures · A college project · MIT licence · Built with Kotlin, CameraX and MediaPipe ·
+    <button class="toggle" id="theme" type="button">Switch theme</button></div>
+</footer>
+
+<script>
+document.documentElement.classList.add('js');
+
+/* ---------- theme toggle ---------- */
+(function(){
+  var b=document.getElementById('theme');
+  b.addEventListener('click',function(){
+    var r=document.documentElement,d=r.getAttribute('data-theme');
+    var sysDark=window.matchMedia('(prefers-color-scheme: dark)').matches;
+    var now=d||(sysDark?'dark':'light');
+    r.setAttribute('data-theme',now==='dark'?'light':'dark');
+  });
+})();
+
+/* ---------- reveal ---------- */
+(function(){
+  var els=document.querySelectorAll('.rv');
+  if(!('IntersectionObserver' in window)){els.forEach(function(e){e.classList.add('in')});return}
+  var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}})},{threshold:.12});
+  els.forEach(function(e){io.observe(e)});
+  setTimeout(function(){els.forEach(function(e){e.classList.add('in')})},2500);
+})();
+
+/* ---------- gesture explorer (defaults taken from the app's engine) ---------- */
+var G=[
+ {e:'✋',n:'Open palm',a:'Volume up',note:'Keep holding and it keeps raising the volume.'},
+ {e:'✊',n:'Fist',a:'Volume down',note:'Keep holding to keep lowering it.'},
+ {e:'👍',n:'Thumbs up',a:'Flashlight on',note:''},
+ {e:'👎',n:'Thumbs down',a:'Flashlight off',note:''},
+ {e:'✌️',n:'Peace',a:'Voice command',note:'Starts listening so you can say “open Spotify”.'},
+ {e:'🤟',n:'I love you',a:'Play / pause',note:'Controls whatever music or video is playing.'},
+ {e:'🤏',n:'Pinch',a:'Mute / unmute',note:'Thumb and index close together.'},
+ {e:'3️⃣',n:'Three fingers',a:'Double tap',note:'Likes a reel on Instagram.'},
+ {e:'🫰',n:'L sign, up',a:'Next reel',note:'Thumb out, index pointing up. Hold to keep scrolling.'},
+ {e:'🫳',n:'L sign, down',a:'Previous reel',note:'Thumb out, index pointing down.'}
+];
+(function(){
+  var list=document.getElementById('glist');
+  G.forEach(function(g,i){
+    var b=document.createElement('button');b.type='button';b.className='g';b.setAttribute('aria-pressed',i===0?'true':'false');
+    b.innerHTML='<div class="e">'+g.e+'</div><div class="n">'+g.n+'</div><div class="d">'+g.a+'</div>';
+    b.addEventListener('click',function(){select(i)});list.appendChild(b);
+  });
+  function select(i){
+    var bs=list.children;for(var k=0;k<bs.length;k++)bs[k].setAttribute('aria-pressed',k===i?'true':'false');
+    document.getElementById('pEmoji').textContent=G[i].e;
+    document.getElementById('pAct').textContent=G[i].a;
+    document.getElementById('pNote').textContent=G[i].note;
+    var r=document.querySelector('.ring .p');r.style.animation='none';void r.getBoundingClientRect();r.style.animation='';
+  }
+  select(0);
+})();
+
+/* ---------- autopilot terminal ---------- */
+var CMDS=[
+ {say:'Message Mom saying I’ll be late',steps:['Opening WhatsApp','Tapping Search','Typing “Mom”','Opening the chat','Typing the message'],end:'Typed. Say “send” to send it.'},
+ {say:'Search lofi music on YouTube',steps:['Opening YouTube','Tapping Search','Typing “lofi music”','Pressing search'],end:'Searched YouTube for lofi music.'},
+ {say:'Click Comment',steps:['Looking for “Comment”','Tapping it'],end:'Clicked Comment.'},
+ {say:'Type nice photo',steps:['Finding the text box','Typing'],end:'Typed.'}
+];
+(function(){
+  var term=document.getElementById('term'),box=document.getElementById('cmds'),timer=null,cur=0;
+  var reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  CMDS.forEach(function(c,i){
+    var b=document.createElement('button');b.type='button';b.textContent='“'+c.say+'”';b.setAttribute('aria-pressed',i===0?'true':'false');
+    b.addEventListener('click',function(){cur=i;run(i,true)});box.appendChild(b);
+  });
+  function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;')}
+  function run(i,manual){
+    clearTimeout(timer);cur=i;
+    var bs=box.children;for(var k=0;k<bs.length;k++)bs[k].setAttribute('aria-pressed',k===i?'true':'false');
+    var c=CMDS[i],lines=[],n=0;
+    function draw(typing){
+      term.innerHTML='<div class="dim">🎤 listening…</div><div class="say">› '+esc(typing)+(typing.length<c.say.length?'<span class="cur"></span>':'')+'</div>'+
+        lines.map(function(l){return '<div class="st"><span class="ok">✓</span><span>'+esc(l)+'</span></div>'}).join('');
+    }
+    if(reduce){lines=c.steps.concat([c.end]);draw(c.say);return}
+    var t=0;draw('');
+    (function type(){
+      t++;draw(c.say.slice(0,t));
+      if(t<c.say.length){timer=setTimeout(type,34)}else{timer=setTimeout(step,450)}
+    })();
+    function step(){
+      if(n<c.steps.length){lines.push(c.steps[n]);n++;draw(c.say);timer=setTimeout(step,620)}
+      else{lines.push(c.end);draw(c.say);if(!manual){timer=setTimeout(function(){run((cur+1)%CMDS.length,false)},3200)}}
+    }
+  }
+  run(0,false);
+})();
+
+/* ---------- hero hand ---------- */
+(function(){
+  var cv=document.getElementById('hero'),ctx=cv.getContext('2d'),tag=document.getElementById('heroTag');
+  var reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  /* open-palm template in a 0..1 box: [x,y] for the 21 MediaPipe points */
+  var P=[[.50,.92],[.40,.84],[.31,.74],[.25,.64],[.21,.55],
+         [.40,.58],[.38,.40],[.37,.27],[.365,.15],
+         [.50,.55],[.50,.35],[.50,.20],[.50,.07],
+         [.60,.58],[.62,.40],[.635,.27],[.65,.16],
+         [.69,.64],[.73,.50],[.76,.40],[.78,.31]];
+  var finger=[[1,2,3,4],[5,6,7,8],[9,10,11,12],[13,14,15,16],[17,18,19,20]];
+  var col=['#ff9a3d','#32d4ef','#4d8dff','#9b7bff','#ff4fa0'];
+  var bones=[];finger.forEach(function(f,fi){bones.push([0,f[0],fi]);for(var i=0;i<3;i++)bones.push([f[i],f[i+1],fi])});
+  bones.push([5,9,-1],[9,13,-1],[13,17,-1]);
+  var dust=[];for(var i=0;i<34;i++)dust.push({x:Math.random(),y:Math.random(),s:.005+Math.random()*.02,r:.6+Math.random()*1.4,p:Math.random()*6.28});
+  var W=0,H=0,dpr=1,t0=performance.now(),visible=true;
+  function size(){var r=cv.getBoundingClientRect();dpr=Math.min(2,window.devicePixelRatio||1);W=r.width;H=r.height;cv.width=W*dpr;cv.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0)}
+  size();window.addEventListener('resize',size);
+  if('IntersectionObserver' in window)new IntersectionObserver(function(e){visible=e[0].isIntersecting}).observe(cv);
+  var poses=['✋ Open palm · Volume up','✌️ Peace · Voice command','🤏 Pinch · Mute','3️⃣ Three fingers · Double tap'],pi=0,lastSwap=0;
+
+  function pts(t){
+    /* base pose: open palm that gently breathes; fingers curl in a slow wave */
+    var out=P.map(function(p){return [p[0],p[1]]});
+    var cx=.5,cy=.55;
+    finger.forEach(function(f,fi){
+      var wave=(Math.sin(t/900+fi*.9)+1)/2;          // 0..1
+      var curl=reduce?0:wave*.34;
+      var base=out[f[0]];
+      for(var j=1;j<4;j++){
+        var q=P[f[j]],bx=P[f[0]];
+        /* pull points toward the knuckle and slightly down as the finger curls */
+        var k=curl*(j/3);
+        out[f[j]]=[q[0]+(bx[0]-q[0])*k*.35, q[1]+(bx[1]+.12-q[1])*k];
+      }
+    });
+    var sway=reduce?0:Math.sin(t/1300)*.012;
+    return out.map(function(p){return [p[0]+sway,p[1]+(reduce?0:Math.sin(t/1100)*.008)]});
+  }
+  function frame(now){
+    requestAnimationFrame(frame);
+    if(!visible)return;
+    var t=now-t0;
+    if(t-lastSwap>3200){lastSwap=t;pi=(pi+1)%poses.length;tag.textContent=poses[pi]}
+    ctx.clearRect(0,0,W,H);
+    /* aurora */
+    function blob(x,y,r,c){var g=ctx.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,c);g.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=g;ctx.fillRect(0,0,W,H)}
+    blob(W*(.2+.08*Math.sin(t/3000)),H*.25,W*.55,'rgba(0,229,255,.26)');
+    blob(W*(.85+.06*Math.sin(t/3700+1)),H*.6,W*.5,'rgba(255,46,146,.22)');
+    blob(W*(.5+.1*Math.sin(t/4300+2)),H*.95,W*.55,'rgba(130,90,255,.26)');
+    /* dust */
+    dust.forEach(function(d){d.y-=d.s*.016;if(d.y<-.02){d.y=1.02;d.x=Math.random()}
+      ctx.globalAlpha=.25+.3*Math.sin(t/700+d.p)*.5+.15;ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(d.x*W,d.y*H,d.r,0,6.283);ctx.fill()});
+    ctx.globalAlpha=1;
+    /* hand */
+    var bh=Math.min(H*.82,W*.78/.75*.85),bw=bh*.78,L=(W-bw)/2,T=(H-bh)/2-H*.02;
+    var p=pts(t);
+    function X(i){return L+p[i][0]*bw}function Y(i){return T+p[i][1]*bh}
+    ctx.lineCap='round';
+    /* palm */
+    ctx.beginPath();[0,1,5,9,13,17].forEach(function(i,k){k?ctx.lineTo(X(i),Y(i)):ctx.moveTo(X(i),Y(i))});ctx.closePath();
+    ctx.fillStyle='rgba(159,233,255,.13)';ctx.fill();
+    bones.forEach(function(b){
+      var c=b[2]>=0?col[b[2]]:'#9fe9ff';
+      ctx.strokeStyle=c;ctx.globalAlpha=.28;ctx.lineWidth=11;ctx.beginPath();ctx.moveTo(X(b[0]),Y(b[0]));ctx.lineTo(X(b[1]),Y(b[1]));ctx.stroke();
+      ctx.globalAlpha=1;ctx.lineWidth=3.4;ctx.beginPath();ctx.moveTo(X(b[0]),Y(b[0]));ctx.lineTo(X(b[1]),Y(b[1]));ctx.stroke();
+    });
+    for(var i=0;i<21;i++){
+      var tip=(i%4===0&&i>0),f=i===0?-1:Math.floor((i-1)/4),c=f>=0?col[f]:'#9fe9ff';
+      if(tip){var br=.5+.5*Math.sin(t/420);ctx.globalAlpha=.22+.16*br;ctx.fillStyle=c;ctx.beginPath();ctx.arc(X(i),Y(i),13+3*br,0,6.283);ctx.fill();ctx.globalAlpha=1;ctx.beginPath();ctx.arc(X(i),Y(i),6,0,6.283);ctx.fill();ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(X(i),Y(i),2.4,0,6.283);ctx.fill()}
+      else{ctx.fillStyle=c;ctx.globalAlpha=.9;ctx.beginPath();ctx.arc(X(i),Y(i),3.6,0,6.283);ctx.fill();ctx.globalAlpha=1}
+    }
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
+
+</body>
+</html>
