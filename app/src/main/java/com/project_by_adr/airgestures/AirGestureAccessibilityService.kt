@@ -27,6 +27,9 @@ class AirGestureAccessibilityService : AccessibilityService() {
         /** next = true swipes up (next reel); false swipes down (previous reel). */
         fun swipe(next: Boolean): Boolean = instance?.doSwipe(next) ?: false
 
+        /** left = true swipes the screen with a finger moving to the left (next page / next photo). */
+        fun swipeSide(left: Boolean): Boolean = instance?.doSwipeSide(left) ?: false
+
         fun doubleTap(): Boolean = instance?.tapTwice() ?: false
 
         fun screenshot(): Boolean =
@@ -95,6 +98,21 @@ class AirGestureAccessibilityService : AccessibilityService() {
         return dispatchGesture(gesture, null, null)
     }
 
+    /** A sideways swipe across the middle of the screen: photo galleries, stories, home screen pages, tabs. */
+    private fun doSwipeSide(left: Boolean): Boolean {
+        val metrics = resources.displayMetrics
+        val y = metrics.heightPixels * 0.5f
+        val from = metrics.widthPixels * (if (left) 0.82f else 0.18f)
+        val to = metrics.widthPixels * (if (left) 0.18f else 0.82f)
+
+        val path = Path()
+        path.moveTo(from, y)
+        path.lineTo(to, y)
+        val stroke = GestureDescription.StrokeDescription(path, 0, 200)
+        val gesture = GestureDescription.Builder().addStroke(stroke).build()
+        return dispatchGesture(gesture, null, null)
+    }
+
     /** Two quick taps in the middle of the screen (on Instagram this likes the reel). */
     private fun tapTwice(): Boolean {
         val metrics = resources.displayMetrics
@@ -138,7 +156,7 @@ class AirGestureAccessibilityService : AccessibilityService() {
         val best = allNodes()
             .filter { node ->
                 node.isVisibleToUser && !node.isEditable &&
-                        labelOf(node).let { label -> wanted.any { label.contains(it) } }
+                    labelOf(node).let { label -> wanted.any { label.contains(it) } }
             }
             .minByOrNull { labelOf(it).length }
             ?: return false

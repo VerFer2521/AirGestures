@@ -60,10 +60,25 @@ object Autopilot {
             return if (ok) "📨  Sent" else "🤷  No send button on screen"
         }
 
-        if (text.startsWith("scroll ")) {
-            val down = !text.contains("up")
-            AirGestureAccessibilityService.swipe(down)
-            return if (down) "⬇️  Scrolling down" else "⬆️  Scrolling up"
+        // sideways: "swipe left", "scroll right", "next page", "previous photo"...
+        val sideLeft = text.contains("left") || text.startsWith("next page") ||
+            text.startsWith("next photo") || text.startsWith("next story")
+        val sideRight = text.contains("right") || text.startsWith("previous page") ||
+            text.startsWith("previous photo") || text.startsWith("previous story")
+        if (isSideways(text) && (sideLeft || sideRight)) {
+            val ok = AirGestureAccessibilityService.swipeSide(sideLeft)
+            return when {
+                !ok -> "⚠️  Couldn't swipe"
+                sideLeft -> "⬅️  Swiped left"
+                else -> "➡️  Swiped right"
+            }
+        }
+
+        if (text.startsWith("scroll ") || text.startsWith("swipe ")) {
+            // "swipe up" moves your finger up (like a reel); "scroll down" does the same thing
+            val fingerUp = if (text.startsWith("swipe ")) text.contains("up") else !text.contains("up")
+            AirGestureAccessibilityService.swipe(fingerUp)
+            return if (fingerUp) "⬆️  Swiped up" else "⬇️  Swiped down"
         }
 
         if (text.startsWith("type ") || text.startsWith("write ")) {
@@ -98,13 +113,22 @@ object Autopilot {
         return null
     }
 
+    /** "next page", "previous photo", "swipe left", "scroll right"... */
+    private fun isSideways(text: String): Boolean =
+        ((text.startsWith("swipe ") || text.startsWith("scroll ")) &&
+            (text.contains("left") || text.contains("right"))) ||
+            text.startsWith("next page") || text.startsWith("previous page") ||
+            text.startsWith("next photo") || text.startsWith("previous photo") ||
+            text.startsWith("next story") || text.startsWith("previous story")
+
     private fun needsService(text: String): Boolean =
         text == "go back" || text == "back" || text in sendWords ||
-                text.startsWith("scroll ") || text.startsWith("type ") ||
-                text.startsWith("write ") || text.startsWith("click ") ||
-                text.startsWith("tap ") || text.startsWith("press ") ||
-                messageRegex.containsMatchIn(text) ||
-                searchOnRegex.containsMatchIn(text) || searchHereRegex.containsMatchIn(text)
+            text.startsWith("scroll ") || text.startsWith("swipe ") || isSideways(text) ||
+            text.startsWith("type ") ||
+            text.startsWith("write ") || text.startsWith("click ") ||
+            text.startsWith("tap ") || text.startsWith("press ") ||
+            messageRegex.containsMatchIn(text) ||
+            searchOnRegex.containsMatchIn(text) || searchHereRegex.containsMatchIn(text)
 
     // ------------------------------------------------------------ macros
 

@@ -12,16 +12,19 @@ class GuideActivity : AppCompatActivity() {
     private data class GuideItem(val emoji: String, val title: String, val desc: String)
 
     private val gestures = listOf(
-        GuideItem("✋", "Open palm", "Hold for half a second: volume up. Keep holding to keep raising"),
-        GuideItem("✊", "Fist", "Hold: volume down. Keep holding to keep lowering"),
+        GuideItem("✋", "Open palm", "Does nothing by default, because it is the pose your hand makes when you raise it. You can give it an action in Settings"),
+        GuideItem("✊", "Fist", "Hold for half a second: go back (like the Back button)"),
         GuideItem("👍", "Thumbs up", "Flashlight on"),
         GuideItem("👎", "Thumbs down", "Flashlight off"),
         GuideItem("✌️", "Victory", "Starts listening for a voice command"),
         GuideItem("🤟", "I love you", "Play / pause your music or video"),
-        GuideItem("👌", "Pinch", "Touch thumb and index fingertips, keep the other three fingers up: mute / unmute"),
+        GuideItem("👌", "Pinch", "Touch thumb and index fingertips, keep the other three fingers up and hold still: mute / unmute"),
+        GuideItem("🎚", "Pinch + drag = volume", "Pinch, then move your whole hand up for volume up or down for volume down. Move further for a bigger change"),
         GuideItem("3️⃣", "Three fingers", "Index, middle and ring finger up: double tap the screen (likes a reel on Instagram)"),
         GuideItem("🔫", "L sign (gun)", "Index up, thumb out, other fingers curled: next reel. Hold to keep scrolling"),
         GuideItem("🔫", "L sign flipped", "Same shape with your fingertip pointing down: previous reel"),
+        GuideItem("⬅️", "L sign pointing left", "Index pointing to your left: swipes the screen left (next photo, next story, next page). Hold to repeat"),
+        GuideItem("➡️", "L sign pointing right", "Index pointing to your right: swipes the screen right (previous photo, previous page)"),
         GuideItem("👆", "Point + flick sideways", "Point up, then flick right for next track, left for previous"),
         GuideItem("⬆️", "Point + flick up", "The phone tells you the time and battery out loud"),
         GuideItem("⬇️", "Point + big flick down", "Go to the home screen"),
@@ -42,6 +45,7 @@ class GuideActivity : AppCompatActivity() {
         GuideItem("🤖", "\"Message Mom saying I'm late\"", "Opens WhatsApp, finds Mom, types it. Say \"send\" to send"),
         GuideItem("🔎", "\"Search lofi on YouTube\"", "Works for Instagram, X, Spotify and more"),
         GuideItem("👆", "\"Click Comment\" / \"Type nice\"", "Taps any button by its word and types into text boxes"),
+        GuideItem("↔️", "\"Swipe left\" / \"Swipe right\"", "Also: next page, previous photo, next story. Swipes the screen sideways"),
         GuideItem("📨", "\"Send\" / \"Scroll down\" / \"Go back\"", "Finishing moves for autopilot jobs")
     )
 
@@ -78,7 +82,9 @@ class GuideActivity : AppCompatActivity() {
                     "•  Hold a gesture until the ring fills (change the time in Settings)\n" +
                     "•  Lower your hand between one-shot gestures to re-arm them\n" +
                     "•  For the pinch, keep the other three fingers up like an OK sign\n" +
+                    "•  Pinch and slide your hand up or down to change the volume smoothly\n" +
                     "•  For the flick: point up first, then flick quickly\n" +
+                    "•  For the sideways swipe: make the L sign and point your index finger left or right, keeping it level\n" +
                     "•  Tap the small grey line under the gesture pill to see what the AI sees (practice mode)\n" +
                     "•  Tap the background to show or hide the camera picture"
     }

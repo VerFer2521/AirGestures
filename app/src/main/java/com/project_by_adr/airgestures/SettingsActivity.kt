@@ -39,7 +39,9 @@ class SettingsActivity : AppCompatActivity() {
         Triple("Pinch", "👌", "Pinch"),
         Triple("Three", "3️⃣", "Three fingers"),
         Triple("L_Up", "🔫", "L sign (up)"),
-        Triple("L_Down", "🔫", "L sign (flipped down)")
+        Triple("L_Down", "🔫", "L sign (flipped down)"),
+        Triple("L_Left", "⬅️", "L sign (pointing left)"),
+        Triple("L_Right", "➡️", "L sign (pointing right)")
     )
 
     private var scrollStatus: TextView? = null
@@ -100,7 +102,7 @@ class SettingsActivity : AppCompatActivity() {
 
     private fun buildMappingRows() {
         val container = findViewById<LinearLayout>(R.id.mappingList)
-        val actions = GestureEngine.Action.values()
+        val actions = GestureEngine.Action.values().filter { it.shown }.toTypedArray()
         val names = actions.map { it.label }
 
         for ((pose, emoji, title) in mappable) {

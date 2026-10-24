@@ -11,6 +11,7 @@ import kotlin.math.sqrt
  *  1. classify()   decides the pose from finger geometry, using the AI label as a hint
  *  2. trackHold()  a pose must be held steady before it fires (and can repeat)
  *  3. trackSwipe() flicks of the pointing finger, in four directions
+ *  4. trackPinchDrag() pinch, then move your hand up / down to change the volume
  *
  * All distances are in "hand sizes" (wrist to middle knuckle), so it works
  * the same near or far from the camera.
@@ -34,11 +35,20 @@ class GestureEngine {
         SCROLL_NEXT("⬆️  Next reel (scroll up)"),
         SCROLL_PREV("⬇️  Previous reel (scroll down)"),
         DOUBLE_TAP("❤️  Double tap screen (like)"),
+        SWIPE_LEFT("⬅️  Swipe screen left"),
+        SWIPE_RIGHT("➡️  Swipe screen right"),
         SCREENSHOT("📸  Screenshot"),
         BACK("◀️  Back"),
         RECENTS("🗂  Recent apps"),
         NOTIFICATIONS("🔔  Pull down notifications"),
-        NONE("🚫  Do nothing")
+        NONE("🚫  Do nothing"),
+        // DRAG_*: used only by pinch + drag. Volume is now done by pinch + drag, so these are hidden from the Settings list
+        DRAG_VOLUME_UP("🔊  Volume up"),
+        DRAG_VOLUME_DOWN("🔉  Volume down");
+
+        val shown: Boolean
+            get() = this != DRAG_VOLUME_UP && this != DRAG_VOLUME_DOWN &&
+                this != VOLUME_UP && this != VOLUME_DOWN
     }
 
     /**
@@ -57,8 +67,8 @@ class GestureEngine {
     companion object {
         /** What each gesture does until you change it in Settings. */
         val DEFAULT_MAPPING: Map<String, Action> = mapOf(
-            "Open_Palm" to Action.VOLUME_UP,
-            "Closed_Fist" to Action.VOLUME_DOWN,
+            "Open_Palm" to Action.NONE,          // the pose your hand makes when you raise it: safest to do nothing
+            "Closed_Fist" to Action.BACK,
             "Thumb_Up" to Action.FLASH_ON,
             "Thumb_Down" to Action.FLASH_OFF,
             "Victory" to Action.VOICE,
@@ -66,7 +76,9 @@ class GestureEngine {
             "Pinch" to Action.MUTE,
             "Three" to Action.DOUBLE_TAP,
             "L_Up" to Action.SCROLL_NEXT,
-            "L_Down" to Action.SCROLL_PREV
+            "L_Down" to Action.SCROLL_PREV,
+            "L_Left" to Action.SWIPE_LEFT,
+            "L_Right" to Action.SWIPE_RIGHT
         )
     }
 
@@ -84,12 +96,17 @@ class GestureEngine {
     private val swipeRatio = 1.3f        // sideways / upward flick distance, in hand sizes
     private val swipeDownRatio = 1.8f    // flick down must be bigger so lowering your hand doesn't count
     private val thumbOutRatio = 0.65f    // thumb tip this far from the index knuckle (in hand sizes) = thumb is sticking out
-    private val lRise = 0.8f             // index must point clearly up (or down) for the L sign
+    private val lRise = 0.8f             // index must point clearly up (or down, or sideways) for the L sign
+    private val lFlat = 0.6f             // for a sideways L the finger may tilt up or down by at most this much
     private val lRepeatMs = 1500L        // while you hold the L sign, scroll again every 1.5 s
     private val swipeWindowMs = 350L
+    private val pinchHoldMs = 700L       // a still pinch (mute) waits this long, so you have time to start dragging
+    private val dragStart = 0.45f        // hand must move this far (in hand sizes) while pinching to start a drag
+    private val dragStep = 0.3f          // every this much movement = one volume step (smaller = faster)
+    private val dragGapMs = 35L          // about one step per camera frame at most
     private val swipeCooldownMs = 1000L
 
-    private val repeatable = setOf("Open_Palm", "Closed_Fist", "L_Up", "L_Down")
+    private val repeatable = setOf("L_Up", "L_Down", "L_Left", "L_Right")
 
     // hold state
     private var candidate = ""
@@ -106,6 +123,13 @@ class GestureEngine {
     private var dbgGap = 0f
     private var dbgThumbOut = false
 
+    // pinch-drag state
+    private var pinchActive = false
+    private var pinchAnchorY = 0f
+    private var pinchLastSeen = 0L
+    private var dragLock = false         // true once a drag started: no mute until you release the pinch
+    private var lastDragStep = 0L
+
     // swipe state
     private val trail = ArrayDeque<Triple<Long, Float, Float>>()
     private var lastPointingTime = 0L
@@ -115,6 +139,8 @@ class GestureEngine {
         candidate = ""
         fired = false
         pinching = false
+        pinchActive = false
+        dragLock = false
         trail.clear()
     }
 
@@ -130,8 +156,10 @@ class GestureEngine {
             trail.clear()
             null
         }
-        val hold = trackHold(pose, now)
-        return Output(swipe ?: hold.first, hold.second, pose, hold.third)
+        val drag = trackPinchDrag(if (valid) landmarks else null, pose, now)
+        // once a drag has started, the still-pinch (mute) must not fire when you stop moving
+        val hold = trackHold(if (dragLock && pose == "Pinch") "None" else pose, now)
+        return Output(swipe ?: drag ?: hold.first, hold.second, pose, hold.third)
     }
 
     // ------------------------------------------------------------ 1. pose
@@ -162,11 +190,14 @@ class GestureEngine {
         if (up[0] && up[1] && up[2] && !up[3]) return "Three"
 
         // L SIGN / "gun": index straight, other three curled, thumb sticking out.
-        // Index pointing up = L_Up, pointing down (hand flipped) = L_Down.
+        // Index pointing up = L_Up, pointing down (hand flipped) = L_Down,
+        // pointing sideways = L_Left / L_Right (left and right as YOU see them).
         if (up[0] && !up[1] && !up[2] && !up[3] && thumbOut) {
             val rise = (lm[0].y() - lm[8].y()) / size   // positive = fingertip above the wrist
+            val run = (lm[0].x() - lm[8].x()) / size    // positive = fingertip towards YOUR right (camera is mirrored)
             if (rise > lRise) return "L_Up"
             if (rise < -lRise) return "L_Down"
+            if (abs(run) > lRise && abs(rise) < lFlat) return if (run > 0) "L_Right" else "L_Left"
         }
 
         // everything else: trust the AI label, but only if the finger shape agrees
@@ -214,12 +245,13 @@ class GestureEngine {
         val action = mapping[candidate] ?: Action.NONE
 
         if (!fired) {
-            if (now - candidateSince >= holdMs) {
+            val needed = if (candidate == "Pinch") maxOf(holdMs, pinchHoldMs) else holdMs
+            if (now - candidateSince >= needed) {
                 fired = true
                 lastFire = now
                 return Triple(action, 1f, candidate)
             }
-            return Triple(null, ((now - candidateSince).toFloat() / holdMs).coerceIn(0f, 1f), null)
+            return Triple(null, ((now - candidateSince).toFloat() / needed).coerceIn(0f, 1f), null)
         }
         if (candidate in repeatable) {
             val gap = if (candidate.startsWith("L_")) maxOf(repeatMs, lRepeatMs) else repeatMs
@@ -261,6 +293,42 @@ class GestureEngine {
             trail.clear()
         }
         return result
+    }
+
+    // ------------------------------------------------- 4. pinch + drag
+
+    /**
+     * Pinch, then move your whole hand up (volume up) or down (volume down).
+     * One step per [dragStep] of movement, so a slow move = small change, a long move = big change.
+     * A pinch that stays still still does what you set for "Pinch" in Settings (mute by default).
+     */
+    private fun trackPinchDrag(lm: List<NormalizedLandmark>?, pose: String, now: Long): Action? {
+        if (lm == null || lm.size < 21 || pose != "Pinch") {
+            // pinch released (or lost for longer than a flicker): get ready for the next one
+            if (pinchActive && now - pinchLastSeen > graceMs) {
+                pinchActive = false
+                dragLock = false
+            }
+            return null
+        }
+        pinchLastSeen = now
+        val size = dist(lm[0], lm[9]).coerceAtLeast(0.01f)
+        val y = lm[9].y()   // middle knuckle: moves with the whole hand, steadier than the fingertips
+        if (!pinchActive) {
+            pinchActive = true
+            dragLock = false
+            pinchAnchorY = y
+            return null
+        }
+        val up = (pinchAnchorY - y) / size   // positive = hand moved up
+        if (!dragLock) {
+            if (abs(up) < dragStart) return null
+            dragLock = true
+        }
+        if (abs(up) < dragStep || now - lastDragStep < dragGapMs) return null
+        lastDragStep = now
+        pinchAnchorY += if (up > 0) -dragStep * size else dragStep * size   // move the anchor one step along
+        return if (up > 0) Action.DRAG_VOLUME_UP else Action.DRAG_VOLUME_DOWN
     }
 
     private fun dist(a: NormalizedLandmark, b: NormalizedLandmark): Float {

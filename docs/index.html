@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="description" content="Air Gestures: control your Android phone with hand gestures and voice. Open source.">
 <title>Air Gestures</title>
+<link rel="icon" type="image/png" href="icon.png">
+<link rel="apple-touch-icon" href="icon.png">
 <meta name="claude:viewport-fit-sides" content="cover">
 <style>
 /* Layout concept: Apple-style product page. One huge centered hero with a live hand skeleton,
@@ -198,7 +200,7 @@ footer{border-top:1px solid var(--line);padding-block:30px;font-size:13px;color:
     </div>
     <div class="stage" aria-label="Animated hand skeleton, as shown in the app">
       <canvas id="hero" role="img" aria-label="A glowing hand skeleton"></canvas>
-      <div class="tag" id="heroTag">✋ Open palm · Volume up</div>
+      <div class="tag" id="heroTag">🤏 Pinch + drag · Volume</div>
     </div>
   </div>
 </section>
@@ -207,7 +209,7 @@ footer{border-top:1px solid var(--line);padding-block:30px;font-size:13px;color:
   <div class="wrap">
     <div class="center rv">
       <p class="eyebrow">Gestures</p>
-      <h2>Ten shapes.<br>Every one remappable.</h2>
+      <h2>Twelve shapes.<br>Every one remappable.</h2>
       <p class="lead" style="margin-top:18px">Hold a gesture for a moment and a ring fills. When it closes, the action fires. Choose any shape below.</p>
     </div>
     <div class="explore rv">
@@ -215,7 +217,7 @@ footer{border-top:1px solid var(--line);padding-block:30px;font-size:13px;color:
       <div class="panel" aria-live="polite">
         <div class="big" id="pEmoji">✋</div>
         <div class="arrow">Does</div>
-        <div class="act" id="pAct">Volume up</div>
+        <div class="act" id="pAct">Does nothing</div>
         <p id="pNote" style="color:var(--muted);margin-top:10px;font-size:15px"></p>
         <svg class="ring" viewBox="0 0 54 54" aria-hidden="true"><circle class="t" cx="27" cy="27" r="22"/><circle class="p" cx="27" cy="27" r="22"/></svg>
       </div>
@@ -251,6 +253,9 @@ footer{border-top:1px solid var(--line);padding-block:30px;font-size:13px;color:
       <div class="card rv"><div class="ic">📸</div><h3>System actions</h3><p>Screenshot, back, recent apps, notifications, flashlight, volume and media keys.</p></div>
       <div class="card rv"><div class="ic">🎛</div><h3>Make it yours</h3><p>Choose what every gesture does, and how long you must hold it, in Settings.</p></div>
       <div class="card rv"><div class="ic">🖐</div><h3>Hand-only stage</h3><p>No face on screen. A calm animated stage shows only your hand. Tap to bring the camera back.</p></div>
+      <div class="card rv"><div class="ic">🎚</div><h3>Pinch to slide the volume</h3><p>Pinch, then move your hand up or down. One smooth stroke can cover the whole volume range.</p></div>
+      <div class="card rv"><div class="ic">↔️</div><h3>Swipe left and right</h3><p>Point the L sign sideways, or say “swipe left”, to flip through photos, stories and pages.</p></div>
+      <div class="card rv"><div class="ic">◀️</div><h3>Back with a fist</h3><p>Hold a fist to go back, like the Back button. Safe defaults mean you rarely need Settings.</p></div>
     </div>
   </div>
 </section>
@@ -293,7 +298,8 @@ footer{border-top:1px solid var(--line);padding-block:30px;font-size:13px;color:
       <div class="ev rv"><div class="v">POLISH</div><h3>Animations, tour, sound, battery saver</h3><p>A new splash screen, an onboarding tour, a glass overlay and smoother motion.</p></div>
       <div class="ev rv"><div class="v">ACTIONS</div><h3>Double tap and system actions</h3><p>Three fingers like a reel. Screenshot, back, recents and notifications became assignable.</p></div>
       <div class="ev rv"><div class="v">AUTOPILOT</div><h3>Voice that works inside apps</h3><p>Multi-step commands open apps, search, click and type, and wait for your “send”.</p></div>
-      <div class="ev rv"><div class="v">TODAY</div><h3>Hand-only stage and open source</h3><p>The camera preview gave way to an animated stage, and the code went public on GitHub.</p></div>
+      <div class="ev rv"><div class="v">OPEN SOURCE</div><h3>Hand-only stage and GitHub</h3><p>The camera preview gave way to an animated stage, and the code went public on GitHub.</p></div>
+      <div class="ev rv"><div class="v">VERSION 2.0</div><h3>Swipe sideways, slide the volume</h3><p>An L sign pointing left or right swipes the screen. Pinch and drag sets the volume. A fist goes back, and the open palm no longer fires by accident. The app also got a new icon.</p></div>
     </div>
   </div>
 </section>
@@ -392,16 +398,18 @@ document.documentElement.classList.add('js');
 
 /* ---------- gesture explorer (defaults taken from the app's engine) ---------- */
 var G=[
- {e:'✋',n:'Open palm',a:'Volume up',note:'Keep holding and it keeps raising the volume.'},
- {e:'✊',n:'Fist',a:'Volume down',note:'Keep holding to keep lowering it.'},
+ {e:'✋',n:'Open palm',a:'Does nothing',note:'It is the pose your hand makes when you raise it, so it is left empty. Give it any action in Settings.'},
+ {e:'✊',n:'Fist',a:'Back',note:'Hold for half a second, like pressing the Back button.'},
  {e:'👍',n:'Thumbs up',a:'Flashlight on',note:''},
  {e:'👎',n:'Thumbs down',a:'Flashlight off',note:''},
  {e:'✌️',n:'Peace',a:'Voice command',note:'Starts listening so you can say “open Spotify”.'},
  {e:'🤟',n:'I love you',a:'Play / pause',note:'Controls whatever music or video is playing.'},
- {e:'🤏',n:'Pinch',a:'Mute / unmute',note:'Thumb and index close together.'},
+ {e:'🤏',n:'Pinch',a:'Mute / unmute',note:'Thumb and index close together. Hold still to mute. Slide your hand up or down while pinching to change the volume.'},
  {e:'3️⃣',n:'Three fingers',a:'Double tap',note:'Likes a reel on Instagram.'},
  {e:'🫰',n:'L sign, up',a:'Next reel',note:'Thumb out, index pointing up. Hold to keep scrolling.'},
- {e:'🫳',n:'L sign, down',a:'Previous reel',note:'Thumb out, index pointing down.'}
+ {e:'🫳',n:'L sign, down',a:'Previous reel',note:'Thumb out, index pointing down.'},
+ {e:'⬅️',n:'L sign, left',a:'Swipe left',note:'Index pointing to your left. Next photo, next story, next page. Hold to repeat.'},
+ {e:'➡️',n:'L sign, right',a:'Swipe right',note:'Index pointing to your right. Previous photo or page.'}
 ];
 (function(){
   var list=document.getElementById('glist');
@@ -476,7 +484,7 @@ var CMDS=[
   function size(){var r=cv.getBoundingClientRect();dpr=Math.min(2,window.devicePixelRatio||1);W=r.width;H=r.height;cv.width=W*dpr;cv.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0)}
   size();window.addEventListener('resize',size);
   if('IntersectionObserver' in window)new IntersectionObserver(function(e){visible=e[0].isIntersecting}).observe(cv);
-  var poses=['✋ Open palm · Volume up','✌️ Peace · Voice command','🤏 Pinch · Mute','3️⃣ Three fingers · Double tap'],pi=0,lastSwap=0;
+  var poses=['🤏 Pinch + drag · Volume','✌️ Peace · Voice command','🤏 Pinch · Mute','3️⃣ Three fingers · Double tap'],pi=0,lastSwap=0;
 
   function pts(t){
     /* base pose: open palm that gently breathes; fingers curl in a slow wave */

@@ -1,4 +1,6 @@
-# ✋ Air Gestures
+<p align="center"><img src="docs/icon.png" width="120" alt="Air Gestures icon"></p>
+
+# Air Gestures
 
 Control your Android phone with hand gestures and your voice. The front camera
 tracks your hand on the device, and nothing is uploaded.
@@ -9,9 +11,11 @@ tracks your hand on the device, and nothing is uploaded.
 
 | Feature | What it does |
 |---|---|
-| Hand gestures | Open palm, fist, pointing, peace, thumbs up/down, pinch, three fingers and more. Each one is mapped to a phone action |
+| Hand gestures | Fist (back), pointing, peace, thumbs up/down, pinch, three fingers, L signs and more. Each one is mapped to a phone action. The open palm does nothing by default |
 | Customisable | Change what every gesture does in Settings |
 | Reel scrolling | Make an L sign (thumb + index) to scroll Instagram Reels up or down |
+| Swipe left / right | Point the L sign to the left or right to swipe the screen sideways (photos, stories, pages). Or say "swipe left" |
+| Pinch + drag volume | Pinch, then move your hand up or down to set the volume in one smooth stroke. A still pinch mutes |
 | Double tap | Hold three fingers to double-tap the screen (likes a reel) |
 | System actions | Screenshot, back, recent apps, notifications, flashlight, volume, media keys, lock |
 | Voice commands | "Open Spotify", "flashlight on", "what time is it", "tell me a joke" and more |
@@ -21,6 +25,17 @@ tracks your hand on the device, and nothing is uploaded.
 | Battery saver | Pauses the camera when the screen is off |
 | Gesture game | A 30-second challenge to practise gestures |
 | Practice mode | Tap the small grey line under the gesture pill to see what the AI sees |
+
+## What's new in 2.0
+
+- L sign pointing left or right swipes the screen (photos, stories, pages)
+- Voice: "swipe left", "swipe right", "next page", "previous photo", "swipe up/down"
+- Pinch + drag sets the volume in one smooth stroke
+- New app icon: a neon hand skeleton, with a themed (one-colour) version for Android 13+
+- Fist now goes Back, and the open palm does nothing by default
+- Fixed: "scroll left" used to scroll down
+
+See [CHANGELOG.md](CHANGELOG.md) for the full history.
 
 ## Privacy
 

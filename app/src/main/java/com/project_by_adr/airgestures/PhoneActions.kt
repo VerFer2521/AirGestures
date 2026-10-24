@@ -89,6 +89,17 @@ object PhoneActions {
             }
             GestureEngine.Action.SCROLL_NEXT -> scrollReels(true)
             GestureEngine.Action.SCROLL_PREV -> scrollReels(false)
+            // pinch + drag: quiet and fast, so no tick sound and no stats entry for every step
+            GestureEngine.Action.DRAG_VOLUME_UP -> {
+                adjustVolume(context, true)
+                return "🔊  Volume up"
+            }
+            GestureEngine.Action.DRAG_VOLUME_DOWN -> {
+                adjustVolume(context, false)
+                return "🔉  Volume down"
+            }
+            GestureEngine.Action.SWIPE_LEFT -> swipeScreen(true)
+            GestureEngine.Action.SWIPE_RIGHT -> swipeScreen(false)
             GestureEngine.Action.DOUBLE_TAP,
             GestureEngine.Action.SCREENSHOT,
             GestureEngine.Action.BACK,
@@ -199,6 +210,16 @@ object PhoneActions {
             !worked -> "⚠️  Turn on scrolling"
             next -> "⬆️  Next reel"
             else -> "⬇️  Previous reel"
+        }
+    }
+
+    /** Sideways swipe: left = true moves your finger to the left (next photo / next page). */
+    fun swipeScreen(left: Boolean): String {
+        val worked = AirGestureAccessibilityService.swipeSide(left)
+        return when {
+            !worked -> "⚠️  Turn on scrolling"
+            left -> "⬅️  Swipe left"
+            else -> "➡️  Swipe right"
         }
     }
 

@@ -28,7 +28,8 @@ object GesturePrefs {
 
     fun actionFor(context: Context, pose: String): GestureEngine.Action {
         val saved = prefs(context).getString("map_$pose", null)
-        return GestureEngine.Action.values().firstOrNull { it.name == saved }
+        // actions that were removed from the Settings list (volume is now pinch + drag) fall back to the default
+        return GestureEngine.Action.values().firstOrNull { it.name == saved && it.shown }
             ?: GestureEngine.DEFAULT_MAPPING.getValue(pose)
     }
 
